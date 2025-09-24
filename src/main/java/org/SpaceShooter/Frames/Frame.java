@@ -1,4 +1,4 @@
-package org.SpaceShooter;
+package org.SpaceShooter.Frames;
 
 import javax.swing.*;
 import java.awt.*;
