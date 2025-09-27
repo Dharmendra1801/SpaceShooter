@@ -3,10 +3,10 @@ package org.SpaceShooter.Components.Buttons;
 import javax.swing.*;
 import java.awt.*;
 
-public class GameScreenQuitButton {
-    public static JButton getQuitButton() {
+public class PlayAgainButton {
+    public static JButton getPlayAgainButton() {
         JButton button = new JButton();
-        ImageIcon quit = new ImageIcon("src/main/images/quit.png");
+        ImageIcon quit = new ImageIcon("src/main/images/replay.png");
         Image img = quit.getImage();
         Image quit_resized = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         button.setIcon(new ImageIcon(quit_resized));

@@ -5,6 +5,8 @@ import java.awt.*;
 
 public final class Frame {
 
+    private static int highScore = 0;
+
     private static JFrame frame;
 
     private Frame() {}
@@ -37,5 +39,16 @@ public final class Frame {
         backgroundLabel.setBounds(0, 0, 600, 800);
 
         return backgroundLabel;
+    }
+
+    public static int getHighScore(int score) {
+        if (score>highScore) {
+            setHighScore(score);
+        }
+        return highScore;
+    }
+
+    public static void setHighScore(int score) {
+        highScore = score;
     }
 }

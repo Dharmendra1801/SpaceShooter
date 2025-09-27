@@ -1,19 +1,18 @@
 package org.SpaceShooter.Components.Rockets;
 
+import org.SpaceShooter.Components.OtherComponents.RocketMissile;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Iterator;
 
 public class GameScreenRocket {
 
     private GameScreenRocket() {}
 
-    private static JPanel gameRocketPanel;
-
     public static JPanel getRocketImagePanel(JFrame frame) {
-
-        if (gameRocketPanel!=null) return gameRocketPanel;
-
-        gameRocketPanel = new JPanel() {
+        JPanel gameRocketPanel = new JPanel() {
             final Image background = new ImageIcon("src/main/images/spaceship.png").getImage();
             @Override
             protected void paintComponent(Graphics g) {
@@ -33,4 +32,6 @@ public class GameScreenRocket {
         if (newX > frame.getWidth() - panel.getWidth()) newX = frame.getWidth() - panel.getWidth();
         panel.setLocation(newX, panel.getY());
     }
+
+
 }
