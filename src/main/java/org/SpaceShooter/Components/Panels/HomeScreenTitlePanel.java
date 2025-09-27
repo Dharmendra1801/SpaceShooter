@@ -6,7 +6,7 @@ import java.awt.*;
 public class HomeScreenTitlePanel {
     public static JPanel getTitlePanel() {
         JPanel panel = new JPanel() {
-            final Image background = new ImageIcon("src/main/images/SpaceShooterTitle.jpg").getImage();
+            final Image background = new ImageIcon(HomeScreenTitlePanel.class.getClassLoader().getResource("images/SpaceShooterTitle.jpg")).getImage();
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);

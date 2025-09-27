@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class LivesLeftHeart {
     public static JPanel getHeart() {
-        ImageIcon heartImage = new ImageIcon("src/main/images/heart.png");
+        ImageIcon heartImage = new ImageIcon(LivesLeftHeart.class.getClassLoader().getResource("images/heart.png"));
         Image img = heartImage.getImage();
         Image heartImage_resized = img.getScaledInstance(45, 45, Image.SCALE_SMOOTH);
         JPanel heart = new JPanel() {

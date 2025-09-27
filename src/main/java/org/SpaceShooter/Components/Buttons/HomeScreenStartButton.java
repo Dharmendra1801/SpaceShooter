@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class HomeScreenStartButton {
     public static JButton getStarButton(JFrame frame) {
-        ImageIcon startIcon = new ImageIcon("src/main/images/StartButton.jpg");
+        ImageIcon startIcon = new ImageIcon(HomeScreenStartButton.class.getClassLoader().getResource("images/StartButton.jpg"));
         Image img = startIcon.getImage();
         final int width = 200;
         final int height = 200;

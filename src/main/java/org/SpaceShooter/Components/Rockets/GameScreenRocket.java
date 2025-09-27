@@ -13,7 +13,7 @@ public class GameScreenRocket {
 
     public static JPanel getRocketImagePanel(JFrame frame) {
         JPanel gameRocketPanel = new JPanel() {
-            final Image background = new ImageIcon("src/main/images/spaceship.png").getImage();
+            final Image background = new ImageIcon(GameScreenRocket.class.getClassLoader().getResource("images/spaceship.png")).getImage();
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);

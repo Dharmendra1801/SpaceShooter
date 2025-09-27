@@ -1,5 +1,7 @@
 package org.SpaceShooter.Components.Buttons;
 
+import org.SpaceShooter.Components.Rockets.GameScreenRocket;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,11 +15,11 @@ public class GameScreenPauseButton {
         return button;
     }
     public static ImageIcon getIcon(boolean check) {
-        ImageIcon play_2 = new ImageIcon("src/main/images/play-2.png");
+        ImageIcon play_2 = new ImageIcon(GameScreenRocket.class.getClassLoader().getResource("images/play-2.png"));
         Image img = play_2.getImage();
         Image play_2_resized = img.getScaledInstance(45, 45, Image.SCALE_SMOOTH);
 
-        ImageIcon pause = new ImageIcon("src/main/images/pause.png");
+        ImageIcon pause = new ImageIcon(GameScreenRocket.class.getClassLoader().getResource("images/pause.png"));
         Image img2 = pause.getImage();
         Image pause_resized = img2.getScaledInstance(45, 45, Image.SCALE_SMOOTH);
 

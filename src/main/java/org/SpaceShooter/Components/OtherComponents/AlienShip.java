@@ -7,7 +7,7 @@ import java.util.Random;
 public class AlienShip {
     public static JPanel getAlienShip(JPanel rocketPanel, JFrame frame) {
         JPanel alienShip = new JPanel(null){
-            final Image background = new ImageIcon("src/main/images/ufo.png").getImage();
+            final Image background = new ImageIcon(AlienShip.class.getClassLoader().getResource("images/ufo.png")).getImage();
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);

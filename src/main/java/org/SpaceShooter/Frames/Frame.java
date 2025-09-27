@@ -29,7 +29,7 @@ public final class Frame {
     }
 
     private static void setLogo() {
-        ImageIcon logo = new ImageIcon(Objects.requireNonNull(Frame.class.getClassLoader().getResource("logo.png")));
+        ImageIcon logo = new ImageIcon(Objects.requireNonNull(Frame.class.getClassLoader().getResource("images/logo.png")));
         frame.setIconImage(logo.getImage());
         try {
             Taskbar taskbar = Taskbar.getTaskbar();
@@ -44,7 +44,7 @@ public final class Frame {
     }
 
     private static JLabel getBackground() {
-        ImageIcon background = new ImageIcon("src/main/images/GameAreaBackground.png");
+        ImageIcon background = new ImageIcon(Frame.class.getClassLoader().getResource("images/GameAreaBackground.png"));
         Image img = background.getImage();
         Image scaledImg = img.getScaledInstance(600, 800, Image.SCALE_SMOOTH);
 

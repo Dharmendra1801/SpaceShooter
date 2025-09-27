@@ -6,7 +6,7 @@ import java.awt.*;
 public class PlayAgainButton {
     public static JButton getPlayAgainButton() {
         JButton button = new JButton();
-        ImageIcon quit = new ImageIcon("src/main/images/replay.png");
+        ImageIcon quit = new ImageIcon(PlayAgainButton.class.getClassLoader().getResource("images/replay.png"));
         Image img = quit.getImage();
         Image quit_resized = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         button.setIcon(new ImageIcon(quit_resized));

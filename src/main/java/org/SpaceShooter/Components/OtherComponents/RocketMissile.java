@@ -7,7 +7,7 @@ public class RocketMissile {
 
     public static JPanel getMissile(JPanel rocketPanel) {
         JPanel missilePanel = new JPanel(null){
-            final Image background = new ImageIcon("src/main/images/missile.png").getImage();
+            final Image background = new ImageIcon(RocketMissile.class.getClassLoader().getResource("images/missile.png")).getImage();
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);

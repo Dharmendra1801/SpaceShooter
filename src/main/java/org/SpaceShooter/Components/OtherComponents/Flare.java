@@ -21,7 +21,7 @@ public class Flare {
         if(flare!=null) return flare;
 
         flare = new JPanel(null){
-            final Image background = new ImageIcon("src/main/images/flare.png").getImage();
+            final Image background = new ImageIcon(Flare.class.getClassLoader().getResource("images/flare.png")).getImage();
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
