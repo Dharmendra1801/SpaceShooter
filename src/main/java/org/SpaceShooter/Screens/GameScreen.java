@@ -1,9 +1,13 @@
 package org.SpaceShooter.Screens;
 
-import org.SpaceShooter.Components.MovingParts.AlienShip;
+import org.SpaceShooter.Components.Buttons.GameScreenPauseButton;
+import org.SpaceShooter.Components.Buttons.GameScreenQuitButton;
+import org.SpaceShooter.Components.OtherComponents.AlienShip;
+import org.SpaceShooter.Components.OtherComponents.Flare;
+import org.SpaceShooter.Components.OtherComponents.ScoreLabels;
 import org.SpaceShooter.Components.Panels.GameScreenDashboard;
 import org.SpaceShooter.Components.Rockets.GameScreenRocket;
-import org.SpaceShooter.Components.MovingParts.RocketMissile;
+import org.SpaceShooter.Components.OtherComponents.RocketMissile;
 import org.SpaceShooter.Frames.Frame;
 
 import javax.swing.*;
@@ -12,29 +16,36 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GameScreen {
 
     private static List<JPanel> missiles;
     private static List<JPanel> alienShips;
     private static List<Queue<JPanel>> alienShipsList;
+    private static List<Flare> flares;
     private static int speed;
     private static int[] dx;
     private static int time;
     private static int timeGap;
     private static int livesLeft;
     private static Timer timer;
+    private static int delay;
+    private static int score;
+    private static JLabel lastLabel;
+    private static boolean pauseButtonCheck;
 
     public GameScreen() {
         initialise();
         JFrame frame = Frame.getFrame();
-        JPanel topPanel = GameScreenDashboard.getDashboard(frame);
+        JPanel dashboard = GameScreenDashboard.getDashboard(frame);
         JPanel rocketPanel = GameScreenRocket.getRocketImagePanel(frame);
+        managePauseButton(dashboard,frame);
         setMoves(rocketPanel,frame);
         initialiseAlienShipsList(frame,rocketPanel);
-//        startGame(rocketPanel,frame);
+        startGame(rocketPanel,frame,dashboard);
         {
-            frame.add(topPanel);
+            frame.add(dashboard);
             frame.add(rocketPanel);
         }
 
@@ -42,15 +53,60 @@ public class GameScreen {
         frame.repaint();
     }
 
+    private void managePauseButton(JPanel dashboard, JFrame frame) {
+        JButton pauseButton = GameScreenPauseButton.getPauseButton();
+        pauseButton.setIcon(GameScreenPauseButton.getIcon(!pauseButtonCheck));
+        pauseButton.setBackground(Color.BLACK);
+        dashboard.add(pauseButton);
+        pauseButton.setBounds(275,5,45,45);
+        final JButton[] quitButton = new JButton[1];
+        pauseButton.addActionListener(e -> {
+            if (pauseButtonCheck) {
+                timer.stop();
+                pauseButton.setIcon(GameScreenPauseButton.getIcon(pauseButtonCheck));
+                pauseButtonCheck = false;
+                quitButton[0] = addQuitButton(frame);
+            }
+            else {
+                timer.start();
+                pauseButton.setIcon(GameScreenPauseButton.getIcon(pauseButtonCheck));
+                pauseButtonCheck = true;
+                removeQuitButton(quitButton[0],frame);
+            }
+        });
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void removeQuitButton(JButton jButton, JFrame frame) {
+        frame.remove(jButton);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private JButton addQuitButton(JFrame frame) {
+        JButton quitButton = GameScreenQuitButton.getQuitButton();
+        quitButton.addActionListener(e -> quitGame(frame));
+        quitButton.setBounds(260,280,100,100);
+        frame.add(quitButton);
+        frame.revalidate();
+        frame.repaint();
+        return quitButton;
+    }
+
     private void initialise() {
         missiles = new ArrayList<>();
         alienShips = new ArrayList<>();
         alienShipsList = new ArrayList<>();
+        flares = new ArrayList<>();
         speed = 5;
         dx = new int[]{0};
         time = 0;
         timeGap = 80;
         livesLeft = 3;
+        delay = 20;
+        score = 0;
+        pauseButtonCheck = true;
     }
 
     private void initialiseAlienShipsList(JFrame frame, JPanel rocketPanel) {
@@ -59,27 +115,54 @@ public class GameScreen {
         }
     }
 
-    private void startGame(JPanel panel, JFrame frame) {
-        timer = new Timer(20, e -> {
+    private void startGame(JPanel panel, JFrame frame, JPanel dashboard) {
+        timer = new Timer(delay, e -> {
             time++;
             timeGapChange();
-            moveMissiles(frame);
             GameScreenRocket.moveRocket(panel,frame,dx[0]);
             createALienShips(panel,frame);
+            moveMissiles(frame);
             moveAlienShip(frame);
+            checkFlares(frame);
+            updateScore(score,dashboard,frame);
             checkLives(frame);
         });
         timer.start();
     }
 
+    private void updateScore(int score, JPanel dashboard, JFrame frame) {
+        if (lastLabel!=null) dashboard.remove(lastLabel);
+        lastLabel = ScoreLabels.getScoreLabel(score);
+        dashboard.add(lastLabel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void checkFlares(JFrame frame) {
+        Iterator<Flare> flareIterator = flares.iterator();
+        while (flareIterator.hasNext()) {
+            Flare flarePojo = flareIterator.next();
+            if (flarePojo.getTimeLeft()<=0) {
+                flareIterator.remove();
+                frame.remove(flarePojo.getFlare());
+                frame.revalidate();
+                frame.repaint();
+            }
+        }
+    }
+
     private void checkLives(JFrame frame) {
         if (livesLeft<=0) {
-            timer.stop();
-            frame.getContentPane().removeAll();
-            frame.revalidate();
-            frame.repaint();
-            new HomeScreen();
+            quitGame(frame);
         }
+    }
+
+    private void quitGame(JFrame frame) {
+        timer.stop();
+        frame.getContentPane().removeAll();
+        frame.revalidate();
+        frame.repaint();
+        new HomeScreen();
     }
 
     private void timeGapChange() {
@@ -133,13 +216,24 @@ public class GameScreen {
         alienShipsList.get(x).add(alienShip);
     }
 
+    private void addFlare(JPanel alienShip, JFrame frame) {
+        Flare flarePOJO = new Flare(delay);
+        flares.add(flarePOJO);
+        flarePOJO.getFlare().setBounds(alienShip.getX(),alienShip.getY(),alienShip.getWidth(),alienShip.getHeight());
+        frame.add(flarePOJO.getFlare());
+        frame.revalidate();
+        frame.repaint();
+    }
+
     private void moveMissiles(JFrame frame) {
         Iterator<JPanel> missileIterator = missiles.iterator();
         while (missileIterator.hasNext()) {
             JPanel missile = missileIterator.next();
             missile.setLocation(missile.getX(),missile.getY()-10);
             if (!alienShipsList.get(missileX(missile)).isEmpty() && alienShipsList.get(missileX(missile)).peek().getY()+10>=missile.getY()) {
+                score++;
                 JPanel alienShip = alienShipsList.get(missileX(missile)).peek();
+                addFlare(alienShip,frame);
                 alienShips.remove(alienShip);
                 removeAlienShip(alienShip,frame);
                 removeMissile(missileIterator,missile,frame);

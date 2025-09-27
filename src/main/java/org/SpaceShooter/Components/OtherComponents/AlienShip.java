@@ -1,4 +1,4 @@
-package org.SpaceShooter.Components.MovingParts;
+package org.SpaceShooter.Components.OtherComponents;
 
 import javax.swing.*;
 import java.awt.*;
