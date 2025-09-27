@@ -1,29 +1,38 @@
 package org.SpaceShooter.Screens;
 
+import org.SpaceShooter.Components.MovingParts.AlienShip;
+import org.SpaceShooter.Components.Panels.GameScreenDashboard;
 import org.SpaceShooter.Components.Rockets.GameScreenRocket;
 import org.SpaceShooter.Components.MovingParts.RocketMissile;
 import org.SpaceShooter.Frames.Frame;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 public class GameScreen {
 
-    private static final List<JPanel> missiles = new ArrayList<>();
-    private static final int speed = 5;
-    private static final int[] dx = {0};
+    private static List<JPanel> missiles;
+    private static List<JPanel> alienShips;
+    private static List<Queue<JPanel>> alienShipsList;
+    private static int speed;
+    private static int[] dx;
+    private static int time;
+    private static int timeGap;
+    private static int livesLeft;
+    private static Timer timer;
 
     public GameScreen() {
+        initialise();
         JFrame frame = Frame.getFrame();
-        JPanel topPanel = getTopPanel(frame);
+        JPanel topPanel = GameScreenDashboard.getDashboard(frame);
         JPanel rocketPanel = GameScreenRocket.getRocketImagePanel(frame);
         setMoves(rocketPanel,frame);
-        startGame(rocketPanel,frame);
-
+        initialiseAlienShipsList(frame,rocketPanel);
+//        startGame(rocketPanel,frame);
         {
             frame.add(topPanel);
             frame.add(rocketPanel);
@@ -33,33 +42,119 @@ public class GameScreen {
         frame.repaint();
     }
 
+    private void initialise() {
+        missiles = new ArrayList<>();
+        alienShips = new ArrayList<>();
+        alienShipsList = new ArrayList<>();
+        speed = 5;
+        dx = new int[]{0};
+        time = 0;
+        timeGap = 80;
+        livesLeft = 3;
+    }
+
+    private void initialiseAlienShipsList(JFrame frame, JPanel rocketPanel) {
+        for (int i=0; i<(frame.getWidth()/ rocketPanel.getWidth()); i++) {
+            alienShipsList.add(new LinkedList<>());
+        }
+    }
+
     private void startGame(JPanel panel, JFrame frame) {
-        Timer timer = new Timer(20, e -> {
-            shootMissiles(frame);
+        timer = new Timer(20, e -> {
+            time++;
+            timeGapChange();
+            moveMissiles(frame);
             GameScreenRocket.moveRocket(panel,frame,dx[0]);
+            createALienShips(panel,frame);
+            moveAlienShip(frame);
+            checkLives(frame);
         });
         timer.start();
     }
 
-    private void shootMissiles(JFrame frame) {
-        Iterator<JPanel> missileIterator = missiles.iterator();
-        while (missileIterator.hasNext()) {
-            JPanel missile = missileIterator.next();
-            missile.setLocation(missile.getX(),missile.getY()-10);
-            if (missile.getY()<=0) {
-                missileIterator.remove();
-                frame.remove(missile);
-                frame.revalidate();
-                frame.repaint();
+    private void checkLives(JFrame frame) {
+        if (livesLeft<=0) {
+            timer.stop();
+            frame.getContentPane().removeAll();
+            frame.revalidate();
+            frame.repaint();
+            new HomeScreen();
+        }
+    }
+
+    private void timeGapChange() {
+        if (time<1500 && time>750) {
+            timeGap = 60;
+            return;
+        }
+        if (time<3000 && time>=1500) {
+            timeGap = 45;
+            return;
+        }
+        if (time>=3000) {
+            timeGap = 30;
+        }
+    }
+
+    private void moveAlienShip(JFrame frame) {
+        if (time%5!=0) return;
+        Iterator<JPanel> alienShipsIterator = alienShips.iterator();
+        while (alienShipsIterator.hasNext()) {
+            JPanel alienShip = alienShipsIterator.next();
+            alienShip.setLocation(alienShip.getX(),alienShip.getY()+5);
+            if (alienShip.getY()+alienShip.getHeight()>=frame.getHeight()) {
+                alienShipsIterator.remove();
+                removeAlienShip(alienShip,frame);
+                livesLeft--;
             }
         }
     }
 
-    private JPanel getTopPanel(JFrame frame) {
-        JPanel panel = new JPanel(null);
-//        panel.setBackground(Color.BLACK);
-//        panel.setBounds(0,0,frame.getWidth(),150);
-        return panel;
+    private void removeAlienShip(JPanel alienShip, JFrame frame) {
+        int x = X(alienShip);
+        alienShipsList.get(x).poll();
+        frame.remove(alienShip);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void createALienShips(JPanel panel, JFrame frame) {
+        if (time%timeGap!=0) return;
+        JPanel alienShip = AlienShip.getAlienShip(panel,frame);
+        putAlienInList(alienShip);
+        alienShips.add(alienShip);
+        frame.add(alienShip);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void putAlienInList(JPanel alienShip) {
+        int x = X(alienShip);
+        alienShipsList.get(x).add(alienShip);
+    }
+
+    private void moveMissiles(JFrame frame) {
+        Iterator<JPanel> missileIterator = missiles.iterator();
+        while (missileIterator.hasNext()) {
+            JPanel missile = missileIterator.next();
+            missile.setLocation(missile.getX(),missile.getY()-10);
+            if (!alienShipsList.get(missileX(missile)).isEmpty() && alienShipsList.get(missileX(missile)).peek().getY()+10>=missile.getY()) {
+                JPanel alienShip = alienShipsList.get(missileX(missile)).peek();
+                alienShips.remove(alienShip);
+                removeAlienShip(alienShip,frame);
+                removeMissile(missileIterator,missile,frame);
+            }
+            if (missile.getY()<=0) {
+                removeMissile(missileIterator,missile,frame);
+            }
+        }
+    }
+
+    private void removeMissile(Iterator<JPanel> missileIterator, JPanel missile, JFrame frame) {
+        missileIterator.remove();
+        frame.remove(missile);
+        frame.revalidate();
+        frame.repaint();
     }
 
     private static void setMoves(JPanel panel, JFrame frame) {
@@ -88,14 +183,25 @@ public class GameScreen {
             }
         };
 
+        final boolean[] buttonSPressed = {false};
+
         Action createMissile = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JPanel missile = RocketMissile.getMissile(panel);
-                frame.add(missile);
-                frame.revalidate();
-                frame.repaint();
-                missiles.add(missile);
+                if (!buttonSPressed[0]) {
+                    JPanel missile = RocketMissile.getMissile(panel);
+                    frame.add(missile);
+                    frame.revalidate();
+                    frame.repaint();
+                    missiles.add(missile);
+                    buttonSPressed[0] = true;
+                }
+            }
+        };
+
+        Action releasedS = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                buttonSPressed[0] = false;
             }
         };
 
@@ -107,6 +213,7 @@ public class GameScreen {
         im.put(KeyStroke.getKeyStroke("pressed RIGHT"), "moveRight");
         im.put(KeyStroke.getKeyStroke("released RIGHT"), "stopMoveRight");
         im.put(KeyStroke.getKeyStroke("pressed S"), "createMissile");
+        im.put(KeyStroke.getKeyStroke("released S"), "releasedS");
         im.put(KeyStroke.getKeyStroke("pressed A"), "moveLeft");
         im.put(KeyStroke.getKeyStroke("released A"), "stopMoveLeft");
         im.put(KeyStroke.getKeyStroke("pressed D"), "moveRight");
@@ -118,6 +225,14 @@ public class GameScreen {
         am.put("moveRight", moveRight);
         am.put("stopMoveRight", stopMoveRight);
         am.put("createMissile", createMissile);
+        am.put("releasedS", releasedS);
 
+    }
+
+    private static int X(JPanel panel) {
+        return panel.getX()/panel.getWidth();
+    }
+    private static int missileX(JPanel panel) {
+        return (panel.getX()+(panel.getWidth()/2))/panel.getWidth();
     }
 }
