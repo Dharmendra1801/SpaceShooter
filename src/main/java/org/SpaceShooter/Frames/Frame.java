@@ -2,6 +2,7 @@ package org.SpaceShooter.Frames;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public final class Frame {
 
@@ -19,11 +20,23 @@ public final class Frame {
         frame.setSize(600,700);
         JLabel background = getBackground();
         frame.setContentPane(background);
+        setLogo();
         frame.setLayout(null);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         return frame;
+    }
+
+    private static void setLogo() {
+        ImageIcon logo = new ImageIcon(Objects.requireNonNull(Frame.class.getClassLoader().getResource("logo.png")));
+        frame.setIconImage(logo.getImage());
+        try {
+            Taskbar taskbar = Taskbar.getTaskbar();
+            taskbar.setIconImage(logo.getImage());
+        } catch (Exception e) {
+            System.out.println("Taskbar icon not supported: " + e.getMessage());
+        }
     }
 
     public static JFrame getFrame() {
